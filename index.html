@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNPSC Kalvi Koodam - Private Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700;900&display=swap');
+        :root { --primary: #0ea5e9; --bg: #020617; }
+        body { font-family: 'Noto Sans Tamil', sans-serif; background-color: var(--bg); color: #f1f5f9; overflow-x: hidden; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .animate-view { animation: slide 0.3s ease-out forwards; }
+        @keyframes slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .perspective-1000 { perspective: 1000px; }
+        .card-inner { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; height: 300px; }
+        .flipped { transform: rotateY(180deg); }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+    </style>
+</head>
+<body class="max-w-2xl mx-auto min-h-screen">
+
+    <!-- USER LOGIN SCREEN -->
+    <div id="user-login-view" class="fixed inset-0 z-[200] bg-slate-950 flex flex-col items-center justify-center p-6">
+        <div class="text-center mb-10">
+            <div class="w-20 h-20 bg-sky-500 rounded-3xl flex items-center justify-center text-white text-3xl mx-auto mb-4 shadow-2xl shadow-sky-500/20"><i class="fas fa-graduation-cap"></i></div>
+            <h1 class="font-black text-2xl uppercase text-white">TNPSC <span class="text-sky-500">KALVI KOODAM</span></h1>
+            <p class="text-slate-500 text-xs mt-2 uppercase tracking-widest font-bold">Aspirants Portal</p>
+        </div>
+        
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-sm border border-white/5 space-y-4 shadow-2xl">
+            <h2 class="text-lg font-bold text-white text-center mb-2">Login to Continue</h2>
+            <div>
+                <input type="text" id="user-id-input" placeholder="Aspirant ID" class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl outline-none focus:border-sky-500 text-white placeholder:text-slate-600">
+            </div>
+            <div>
+                <input type="password" id="user-pass-input" placeholder="Password" class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl outline-none focus:border-sky-500 text-white placeholder:text-slate-600">
+            </div>
+            <button onclick="handleUserLogin()" class="w-full bg-sky-600 py-4 rounded-2xl font-black text-xs uppercase text-white shadow-lg shadow-sky-600/30 active:scale-95 transition-all">Sign In</button>
+            <div id="login-msg" class="text-red-500 text-[10px] font-bold text-center uppercase tracking-widest hidden">Invalid Access</div>
+        </div>
+        <button onclick="toggleAdminLogin(true)" class="mt-8 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:text-sky-500 transition-colors">Admin Access Only</button>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="admin-modal" class="fixed inset-0 z-[300] bg-slate-950/98 backdrop-blur-xl hidden flex items-center justify-center p-6">
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-sm border border-white/10 text-center">
+            <div class="w-16 h-16 bg-sky-500/10 text-sky-500 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl"><i class="fas fa-user-shield"></i></div>
+            <h2 class="text-xl font-black mb-6 text-white uppercase tracking-tighter">Admin Portal</h2>
+            <input type="password" id="admin-pass-input" placeholder="Admin Key" class="w-full bg-slate-950 border border-white/10 p-4 rounded-2xl text-center text-2xl outline-none mb-4 focus:border-sky-500 text-white">
+            <div class="flex gap-2">
+                <button onclick="toggleAdminLogin(false)" class="flex-1 bg-slate-800 py-4 rounded-2xl font-bold text-xs uppercase text-white">Cancel</button>
+                <button onclick="verifyAdmin()" class="flex-1 bg-sky-600 py-4 rounded-2xl font-bold text-xs uppercase text-white shadow-lg">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP INTERFACE -->
+    <div id="app-content" class="hidden">
+        <nav class="sticky top-0 z-50 glass p-4 flex justify-between items-center border-b border-white/5">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showView('home')">
+                <div class="w-9 h-9 bg-sky-500 rounded-lg flex items-center justify-center text-white"><i class="fas fa-graduation-cap"></i></div>
+                <h1 class="font-black text-sm uppercase text-white">TNPSC <span class="text-sky-500">KALVI KOODAM</span></h1>
+            </div>
+            <div class="flex gap-2">
+                <button id="admin-btn-nav" onclick="toggleAdminLogin(true)" class="bg-slate-800 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-white/10 text-white">Admin</button>
+                <button onclick="handleUserLogout()" class="bg-red-500/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/20"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </nav>
+
+        <main class="p-4">
+            <!-- HOME VIEW -->
+            <section id="view-home" class="animate-view space-y-6">
+                <div class="text-center py-8">
+                    <h2 class="text-2xl font-black text-white">வணக்கம் ASPIRANTS!</h2>
+                    <p id="user-display-name" class="text-sky-500 text-xs font-black uppercase tracking-widest mt-1"></p>
+                </div>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                    <input type="text" id="topic-search" oninput="renderHome()" placeholder="Search Topics..." class="w-full bg-slate-900/50 border border-white/5 p-4 pl-12 rounded-2xl outline-none focus:border-sky-500 text-white">
+                </div>
+                <div id="topics-list" class="grid gap-4"></div>
+            </section>
+
+            <!-- PREVIEW VIEW -->
+            <section id="view-preview" class="hidden animate-view space-y-6">
+                <button onclick="showView('home')" class="text-sky-500 font-bold text-xs uppercase flex items-center gap-2"><i class="fas fa-arrow-left"></i> Back to Home</button>
+                <div class="text-center py-6 bg-sky-500/5 rounded-[2.5rem] border border-sky-500/10">
+                    <h2 id="current-topic-title" class="text-2xl font-black text-white px-4"></h2>
+                    <p id="current-topic-meta" class="text-[10px] text-sky-500 font-black uppercase mt-3 tracking-widest"></p>
+                </div>
+                <div class="grid gap-4">
+                    <div onclick="startActivity('study')" class="glass p-6 rounded-3xl flex items-center gap-6 cursor-pointer"><i class="fas fa-book-open text-blue-400 text-2xl"></i><div><h3 class="font-bold text-white text-lg">Study Mode</h3></div></div>
+                    <div onclick="startActivity('flash')" class="glass p-6 rounded-3xl flex items-center gap-6 cursor-pointer"><i class="fas fa-bolt text-yellow-400 text-2xl"></i><div><h3 class="font-bold text-white text-lg">Flashcards</h3></div></div>
+                    <div onclick="startActivity('quiz')" class="glass p-6 rounded-3xl flex items-center gap-6 cursor-pointer"><i class="fas fa-gamepad text-emerald-400 text-2xl"></i><div><h3 class="font-bold text-white text-lg">Quiz (10 Hearts)</h3></div></div>
+                </div>
+            </section>
+
+            <!-- STUDY VIEW -->
+            <section id="view-study" class="hidden space-y-4">
+                <button onclick="showView('preview')" class="text-sky-500 font-bold text-xs flex items-center gap-2"><i class="fas fa-arrow-left"></i> Back</button>
+                <div id="study-container" class="space-y-4"></div>
+            </section>
+
+            <!-- FLASHCARD VIEW -->
+            <section id="view-flash" class="hidden space-y-6">
+                <button onclick="showView('preview')" class="text-sky-500 font-bold text-xs flex items-center gap-2"><i class="fas fa-arrow-left"></i> Back</button>
+                <div class="text-center text-[10px] font-black text-slate-500 uppercase tracking-widest" id="fc-meta"></div>
+                <div class="relative perspective-1000 max-w-sm mx-auto">
+                    <div id="flash-card" class="card-inner w-full cursor-pointer" onclick="this.classList.toggle('flipped')">
+                        <div class="absolute inset-0 backface-hidden glass rounded-[3rem] p-10 flex flex-col items-center justify-center text-center">
+                            <p id="fc-front" class="text-xl font-bold leading-relaxed text-white"></p>
+                        </div>
+                        <div class="absolute inset-0 backface-hidden glass bg-sky-600 rounded-[3rem] p-10 flex flex-col items-center justify-center text-center rotate-y-180">
+                            <p id="fc-back" class="text-2xl font-black text-white leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-4 max-w-sm mx-auto">
+                    <button onclick="changeFC(-1)" class="flex-1 bg-slate-800 py-4 rounded-2xl font-bold text-white">Prev</button>
+                    <button onclick="changeFC(1)" class="flex-1 bg-sky-600 py-4 rounded-2xl font-bold text-white">Next</button>
+                </div>
+            </section>
+
+            <!-- QUIZ VIEW -->
+            <section id="view-quiz" class="hidden space-y-6">
+                <div class="flex justify-between items-center px-2">
+                    <button onclick="showView('preview')" class="text-sky-500 font-bold text-xs flex items-center gap-2"><i class="fas fa-times"></i> Quit</button>
+                    <div id="life-counter" class="text-red-500 flex gap-1.5 text-sm"></div>
+                </div>
+                <div class="glass p-8 rounded-[3rem] relative overflow-hidden">
+                    <div id="quiz-progress" class="absolute top-0 left-0 h-1.5 bg-sky-500"></div>
+                    <h2 id="quiz-q" class="text-xl font-bold mb-8 min-h-[100px] text-white"></h2>
+                    <div id="quiz-options" class="grid gap-3"></div>
+                </div>
+            </section>
+
+            <!-- ADMIN PANEL -->
+            <section id="view-admin" class="hidden space-y-8 pb-20">
+                <div class="flex justify-between items-center">
+                    <button onclick="showView('home')" class="text-sky-500 font-bold text-xs uppercase flex items-center gap-2"><i class="fas fa-arrow-left"></i> Exit Admin</button>
+                    <button onclick="resetSystem()" class="text-red-500 text-[10px] font-bold uppercase underline">Reset System</button>
+                </div>
+
+                <div class="flex bg-slate-900 p-1 rounded-2xl border border-white/5">
+                    <button onclick="toggleAdminSubTab('content')" id="tab-content" class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase bg-sky-600 text-white">Content Manager</button>
+                    <button onclick="toggleAdminSubTab('users')" id="tab-users" class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase text-slate-500">User Manager</button>
+                </div>
+
+                <!-- ADMIN: CONTENT SECTION -->
+                <div id="admin-content-section" class="space-y-6">
+                    <div class="glass p-6 rounded-[2rem] space-y-4 border border-sky-500/20">
+                        <h3 id="admin-form-title" class="font-black text-sky-500 text-xs uppercase tracking-widest">Topic Editor</h3>
+                        <div class="space-y-4">
+                            <input type="text" id="admin-topic-name" placeholder="Topic Name" class="w-full bg-slate-950/50 border border-white/10 p-4 rounded-2xl outline-none text-white focus:border-sky-500">
+                            <textarea id="admin-bulk-input" rows="5" placeholder='JSON: [{"q":"?","options":["A","B"],"ans":0}]' class="w-full bg-slate-950/50 border border-white/10 p-5 rounded-2xl font-mono text-[11px] text-yellow-100/80 outline-none"></textarea>
+                            <div class="flex gap-2">
+                                <button id="btn-save-new" onclick="saveNewTopic()" class="flex-1 bg-sky-600 py-4 rounded-2xl font-black text-xs uppercase text-white shadow-lg">Save New</button>
+                                <button id="btn-update-existing" onclick="updateExistingTopic()" class="hidden flex-1 bg-emerald-600 py-4 rounded-2xl font-black text-xs uppercase text-white shadow-lg">Update</button>
+                                <button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden bg-slate-800 px-8 rounded-2xl font-black text-xs uppercase text-white">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="admin-topics-list" class="grid gap-3"></div>
+                </div>
+
+                <!-- ADMIN: USER SECTION -->
+                <div id="admin-users-section" class="hidden space-y-6">
+                    <div class="glass p-6 rounded-[2rem] space-y-4 border border-emerald-500/20">
+                        <h3 class="font-black text-emerald-500 text-xs uppercase tracking-widest">Aspirant Registration</h3>
+                        <div class="space-y-3">
+                            <input type="text" id="new-user-id" placeholder="Aspirant ID" class="w-full bg-slate-950 border border-white/10 p-4 rounded-2xl outline-none text-white focus:border-emerald-500">
+                            <input type="text" id="new-user-pass" placeholder="Password" class="w-full bg-slate-950 border border-white/10 p-4 rounded-2xl outline-none text-white focus:border-emerald-500">
+                            <button onclick="createNewUser()" class="w-full bg-emerald-600 py-4 rounded-2xl font-black text-xs uppercase text-white">Create Account</button>
+                        </div>
+                    </div>
+                    <div id="admin-users-list" class="grid gap-3"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Core Database with default values
+        let db = JSON.parse(localStorage.getItem('tk_db')) || {
+            topics: { "General Tamil": [{ q: "தமிழுக்கு அமுதென்று பேர் - பாடியவர்?", options: ["பாரதியார்", "பாரதிதாசன்", "நாமக்கல் கவிஞர்"], ans: 1 }] },
+            users: { "admin": { pass: "0308", isAdmin: true } } // Special Case
+        };
+
+        let activeUser = localStorage.getItem('tk_session') || null;
+        let currentTopic = "", currentQuestions = [], curIdx = 0, lives = 10, editingKey = null;
+
+        function saveDB() { localStorage.setItem('tk_db', JSON.stringify(db)); }
+        
+        // Boot up logic
+        window.onload = () => {
+            if(activeUser && (db.users[activeUser] || activeUser === "admin")) {
+                showApp();
+            } else {
+                localStorage.removeItem('tk_session');
+            }
+        };
+
+        function showApp() {
+            document.getElementById('user-login-view').style.display = 'none';
+            document.getElementById('app-content').classList.remove('hidden');
+            document.getElementById('user-display-name').innerText = "Logged in as: " + (activeUser || "Guest");
+            renderHome();
+        }
+
+        // USER LOGIN
+        function handleUserLogin() {
+            const id = document.getElementById('user-id-input').value.trim();
+            const pass = document.getElementById('user-pass-input').value.trim();
+            const msg = document.getElementById('login-msg');
+
+            if(!id || !pass) return;
+
+            // Check if user exists and pass matches
+            if(db.users[id] && db.users[id].pass === pass) {
+                // Device Locking logic (One ID per device)
+                const deviceLock = localStorage.getItem('tk_device_lock');
+                if(deviceLock && deviceLock !== id) {
+                    alert("இந்த போனில் ஏற்கனவே ஒரு ID உள்ளது. தயவுசெய்து அதே ID மூலம் நுழையவும்.");
+                    return;
+                }
+                
+                localStorage.setItem('tk_session', id);
+                localStorage.setItem('tk_device_lock', id);
+                activeUser = id;
+                showApp();
+            } else {
+                msg.classList.remove('hidden');
+                setTimeout(() => msg.classList.add('hidden'), 3000);
+            }
+        }
+
+        function handleUserLogout() {
+            if(confirm("Logout செய்ய வேண்டுமா?")) {
+                localStorage.removeItem('tk_session');
+                location.reload();
+            }
+        }
+
+        // ADMIN ACCESS FIX
+        const ADMIN_PASS = "0308";
+        function toggleAdminLogin(show) {
+            document.getElementById('admin-modal').classList.toggle('hidden', !show);
+            if(show) {
+                document.getElementById('admin-pass-input').value = "";
+                document.getElementById('admin-pass-input').focus();
+            }
+        }
+
+        function verifyAdmin() {
+            const pass = document.getElementById('admin-pass-input').value;
+            if(pass === ADMIN_PASS) {
+                toggleAdminLogin(false);
+                // If not logged in as user, temporarily allow access
+                if(!activeUser) {
+                    activeUser = "admin";
+                    showApp();
+                }
+                showView('admin');
+            } else {
+                alert("தவறான பாஸ்வேர்டு!");
+            }
+        }
+
+        // VIEW NAVIGATION
+        function showView(vid) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`view-${vid}`).classList.remove('hidden');
+            if(vid === 'home') renderHome();
+            if(vid === 'admin') {
+                toggleAdminSubTab('content');
+                renderAdmin();
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function toggleAdminSubTab(tab) {
+            document.getElementById('admin-content-section').classList.toggle('hidden', tab !== 'content');
+            document.getElementById('admin-users-section').classList.toggle('hidden', tab !== 'users');
+            
+            document.getElementById('tab-content').className = tab === 'content' ? 'flex-1 py-3 rounded-xl text-[10px] font-black uppercase bg-sky-600 text-white' : 'flex-1 py-3 rounded-xl text-[10px] font-black uppercase text-slate-500';
+            document.getElementById('tab-users').className = tab === 'users' ? 'flex-1 py-3 rounded-xl text-[10px] font-black uppercase bg-emerald-600 text-white' : 'flex-1 py-3 rounded-xl text-[10px] font-black uppercase text-slate-500';
+            
+            if(tab === 'users') renderAdminUsers();
+        }
+
+        // HOME PAGE RENDERING
+        function renderHome() {
+            const list = document.getElementById('topics-list');
+            const search = document.getElementById('topic-search').value.toLowerCase();
+            list.innerHTML = '';
+            
+            Object.keys(db.topics).filter(t => t.toLowerCase().includes(search)).forEach(topic => {
+                const div = document.createElement('div');
+                div.className = "glass p-6 rounded-[2.2rem] flex items-center justify-between cursor-pointer border border-white/[0.03]";
+                div.onclick = () => { currentTopic = topic; currentQuestions = db.topics[topic]; openTopic(); };
+                div.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-sky-500/10 text-sky-500 rounded-2xl flex items-center justify-center text-xl"><i class="fas fa-folder"></i></div>
+                        <div>
+                            <h3 class="font-bold text-white">${topic}</h3>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${db.topics[topic].length} Questions</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-slate-800"></i>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function openTopic() {
+            document.getElementById('current-topic-title').innerText = currentTopic;
+            document.getElementById('current-topic-meta').innerText = `${currentQuestions.length} Questions Found`;
+            showView('preview');
+        }
+
+        // USER MANAGEMENT (ADMIN ONLY)
+        function createNewUser() {
+            const id = document.getElementById('new-user-id').value.trim();
+            const pass = document.getElementById('new-user-pass').value.trim();
+            if(!id || !pass) return alert("Fill details!");
+            if(db.users[id]) return alert("ID already exists!");
+            
+            db.users[id] = { pass: pass };
+            saveDB();
+            renderAdminUsers();
+            document.getElementById('new-user-id').value = "";
+            document.getElementById('new-user-pass').value = "";
+            alert("பயனர் உருவாக்கப்பட்டது!");
+        }
+
+        function renderAdminUsers() {
+            const list = document.getElementById('admin-users-list');
+            list.innerHTML = '';
+            Object.keys(db.users).forEach(uid => {
+                if(uid === "admin") return;
+                const div = document.createElement('div');
+                div.className = "glass p-4 rounded-2xl flex justify-between items-center border border-white/5";
+                div.innerHTML = `
+                    <div>
+                        <p class="font-bold text-white text-sm">${uid}</p>
+                        <p class="text-[10px] text-slate-500">Pass: ${db.users[uid].pass}</p>
+                    </div>
+                    <button onclick="deleteUser('${uid}')" class="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Delete</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function deleteUser(uid) {
+            if(confirm(`User ${uid}-ஐ நீக்கவா?`)) {
+                delete db.users[uid];
+                saveDB();
+                renderAdminUsers();
+            }
+        }
+
+        // CONTENT MANAGEMENT (ADMIN ONLY)
+        function renderAdmin() {
+            const list = document.getElementById('admin-topics-list');
+            list.innerHTML = '';
+            Object.keys(db.topics).forEach(topic => {
+                const div = document.createElement('div');
+                div.className = "glass p-4 rounded-2xl flex justify-between items-center border border-white/5";
+                div.innerHTML = `
+                    <div><p class="font-bold text-white text-sm">${topic}</p></div>
+                    <div class="flex gap-2">
+                        <button onclick="editTopic('${topic.replace(/'/g, "\\'")}')" class="bg-sky-500/10 text-sky-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Edit</button>
+                        <button onclick="deleteTopic('${topic.replace(/'/g, "\\'")}')" class="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Delete</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function editTopic(name) {
+            editingKey = name;
+            document.getElementById('admin-form-title').innerText = "Editing: " + name;
+            document.getElementById('admin-topic-name').value = name;
+            document.getElementById('admin-bulk-input').value = JSON.stringify(db.topics[name]);
+            document.getElementById('btn-save-new').classList.add('hidden');
+            document.getElementById('btn-update-existing').classList.remove('hidden');
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+        }
+
+        function cancelEdit() {
+            editingKey = null;
+            document.getElementById('admin-form-title').innerText = "Topic Editor";
+            document.getElementById('admin-topic-name').value = "";
+            document.getElementById('admin-bulk-input').value = "";
+            document.getElementById('btn-save-new').classList.remove('hidden');
+            document.getElementById('btn-update-existing').classList.add('hidden');
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+        }
+
+        function saveNewTopic() {
+            const n = document.getElementById('admin-topic-name').value.trim();
+            const b = document.getElementById('admin-bulk-input').value.trim();
+            if(!n) return;
+            try {
+                db.topics[n] = b ? JSON.parse(b) : [];
+                saveDB();
+                cancelEdit();
+                renderAdmin();
+            } catch(e) { alert("JSON Format Error!"); }
+        }
+
+        function updateExistingTopic() {
+            const n = document.getElementById('admin-topic-name').value.trim();
+            const b = document.getElementById('admin-bulk-input').value.trim();
+            try {
+                if(n !== editingKey) delete db.topics[editingKey];
+                db.topics[n] = JSON.parse(b);
+                saveDB();
+                cancelEdit();
+                renderAdmin();
+            } catch(e) { alert("JSON Error!"); }
+        }
+
+        function deleteTopic(name) {
+            if(confirm("நிச்சயமாக நீக்க வேண்டுமா?")) {
+                delete db.topics[name];
+                saveDB();
+                renderAdmin();
+            }
+        }
+
+        // GAMEPLAY FUNCTIONS (STUDY, FLASH, QUIZ)
+        function startActivity(mode) {
+            if(!currentQuestions || currentQuestions.length === 0) return alert("தலைப்பில் வினாக்கள் இல்லை!");
+            curIdx = 0; lives = 10;
+            showView(mode);
+            if(mode === 'study') {
+                const c = document.getElementById('study-container');
+                c.innerHTML = '';
+                currentQuestions.forEach((q,i) => {
+                    const d = document.createElement('div');
+                    d.className = "glass p-5 rounded-3xl border border-white/5 animate-view";
+                    d.innerHTML = `<p class="text-sky-500 text-[10px] font-black mb-1">Q ${i+1}</p><p class="font-bold text-white mb-2">${q.q}</p><p class="text-emerald-400 font-bold text-xs">Ans: ${q.options[q.ans]}</p>`;
+                    c.appendChild(d);
+                });
+            } else if(mode === 'flash') renderFC();
+            else if(mode === 'quiz') renderQuiz();
+        }
+
+        function renderFC() {
+            const q = currentQuestions[curIdx];
+            document.getElementById('flash-card').classList.remove('flipped');
+            document.getElementById('fc-meta').innerText = `Card ${curIdx+1} / ${currentQuestions.length}`;
+            setTimeout(() => {
+                document.getElementById('fc-front').innerText = q.q;
+                document.getElementById('fc-back').innerText = q.options[q.ans];
+            }, 100);
+        }
+
+        function changeFC(dir) {
+            curIdx += dir;
+            if(curIdx < 0) curIdx = 0;
+            else if(curIdx >= currentQuestions.length) showView('preview');
+            else renderFC();
+        }
+
+        function renderQuiz() {
+            const lc = document.getElementById('life-counter');
+            lc.innerHTML = '';
+            for(let i=0; i<lives; i++) lc.innerHTML += '<i class="fas fa-heart"></i>';
+
+            const q = currentQuestions[curIdx];
+            document.getElementById('quiz-q').innerText = q.q;
+            document.getElementById('quiz-progress').style.width = `${((curIdx+1)/currentQuestions.length)*100}%`;
+            
+            const opts = document.getElementById('quiz-options');
+            opts.innerHTML = '';
+            q.options.forEach((opt, i) => {
+                const b = document.createElement('button');
+                b.className = "w-full text-left p-5 bg-slate-950/50 border border-white/5 rounded-2xl text-sm font-bold flex items-center gap-4 text-white";
+                b.innerHTML = `<span class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-sky-500 font-black">${String.fromCharCode(65+i)}</span> ${opt}`;
+                b.onclick = () => {
+                    if(i === q.ans) {
+                        b.classList.add('bg-emerald-600/20', 'border-emerald-500');
+                    } else {
+                        b.classList.add('bg-red-600/20', 'border-red-500');
+                        lives--;
+                        if(lives <= 0) { alert("வாய்ப்புகள் முடிந்தது!"); showView('preview'); return; }
+                    }
+                    setTimeout(() => {
+                        curIdx++;
+                        if(curIdx >= currentQuestions.length) { alert("அனைத்து வினாக்களும் முடிந்தது!"); showView('preview'); }
+                        else renderQuiz();
+                    }, 800);
+                };
+                opts.appendChild(b);
+            });
+        }
+
+        function resetSystem() {
+            if(confirm("அனைத்துத் தரவுகளும் (பயனர்கள் உட்பட) அழியும். தொடரலாமா?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
+
